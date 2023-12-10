@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: project-resource-quota
+  namespace: exam
+spec:
+  hard:
+    pods: "12" # Maximum number of pods
+    requests.cpu: "2" # Maximum total CPU requests
+    requests.memory: 2Gi # Maximum total memory requests
+    limits.cpu: "4" # Maximum total CPU limits
+    limits.memory: 4Gi # Maximum total memory limits

@@ -1,0 +1,92 @@
+# templates/backend-app.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-app-config
+  namespace: {{ .Values.namespace }}
+data:
+  host: {{ .Values.backend.host }}
+  dbname: {{ .Values.backend.dbname }}
+  username: {{ .Values.backend.username }}
+  allowed-origin: {{ .Values.backend.allowedOrigin }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-app-service
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    app: backend
+
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-app-deployment
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.backend.replicas }}
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          image: {{ .Values.backend.image }}
+          ports:
+            - containerPort: 8080
+          env:
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: password
+            - name: MYSQL_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-app-config
+                  key: username
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-app-config
+                  key: host
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-app-config
+                  key: dbname
+            - name: ALLOWED_ORIGIN
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-app-config
+                  key: allowed-origin
+          resources:
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 3

@@ -1,0 +1,13 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: list-services-binding
+  namespace: exam
+subjects:
+  - kind: ServiceAccount
+    name: user1
+    namespace: exam
+roleRef:
+  kind: Role
+  name: list-services
+  apiGroup: rbac.authorization.k8s.io

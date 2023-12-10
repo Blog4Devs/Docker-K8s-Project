@@ -1,0 +1,12 @@
+apiVersion: skaffold/v4beta8
+kind: Config
+metadata:
+  name: angular---crud-example-master-
+build:
+  artifacts:
+    - image: elmazidi/frontend-app
+      docker:
+        dockerfile: Dockerfile
+manifests:
+  rawYaml:
+    - frontend-app.yaml
